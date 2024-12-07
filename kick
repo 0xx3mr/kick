@@ -1,0 +1,15 @@
+-- اسم اللاعب الذي ترغب في طرده
+local targetPlayerName = "ا3mr"
+
+-- دالة لفحص اللاعبين في الخادم
+function onPlayerJoin(player)
+    if player.name == targetPlayerName then
+        -- طرد اللاعب من الخادم إذا كان اسمه مطابقًا
+        kickPlayer(player, "kicked by owner")
+    end
+end
+
+-- دالة لإدارة اللاعبين
+function onUpdate()
+    -- هنا يمكن وضع المزيد من الأكواد التي تراقب الخادم أو اللاعبين إذا لزم الأمر
+end
