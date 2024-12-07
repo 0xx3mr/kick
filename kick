@@ -1,26 +1,76 @@
--- اسم اللاعب الذي ترغب في طرده
-local targetPlayerName = "3MR"
+-- List of skins with their respective preview images, folder paths, and usage rules
+local skins = {
+    {skin = "Black", preview = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\assettocorsa\\content\\cars\\nolimits_honda_accord_2012\\skins\\Black\\preview.jpg", allowInPits = true, allowEverywhere = false},
+    {skin = "White", preview = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\assettocorsa\\content\\cars\\nolimits_honda_accord_2012\\skins\\White\\preview.jpg", allowInPits = false, allowEverywhere = true},
+    {skin = "Silver", preview = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\assettocorsa\\content\\cars\\nolimits_honda_accord_2012\\skins\\Silver\\preview.jpg", allowInPits = true, allowEverywhere = true}
+}
 
--- دالة لفحص اللاعبين في الخادم
-function onPlayerJoin(player)
-    -- تحقق مما إذا كان اسم اللاعب يطابق الاسم المستهدف
-    if player.name == targetPlayerName then
-        -- طرد اللاعب إذا تم العثور على تطابق
-        print("يتم طرد اللاعب: " .. player.name) -- سجل للطباعة
-        kickPlayer(player, "لقد تم طردك بسبب اسم غير مرغوب فيه.")
+-- Function to check if a file exists
+function fileExists(filePath)
+    local file = io.open(filePath, "r")
+    if file then
+        io.close(file)
+        return true
+    else
+        return false
     end
 end
 
--- دالة لإدارة تحديثات الخادم (اختياري)
-function onUpdate()
-    -- يمكن إضافة المزيد من الأكواد هنا إذا كنت ترغب في مراقبة أشياء أخرى
-end
-
--- هذه هي دالة الطرد باستخدام API الخاصة بـ Assetto Corsa
-function kickPlayer(player, message)
-    -- هذه الدالة تطرد اللاعب مع رسالة
-    -- تأكد من أن الخادم يدعم هذه الدالة
-    if player then
-        player.kick(message)
+-- Function to display skin previews in the UI
+function displaySkinPreviews()
+    -- Display available skins in the UI
+    for _, skin in ipairs(skins) do
+        local previewImagePath = skin.preview  -- Path to the preview image
+        
+        -- Check if the preview image exists
+        if fileExists(previewImagePath) then
+            -- Register a new entry in the UI for each skin with the preview image and name
+            ui.registerOnlineExtra(
+                ui.Icons.PaintBucket,  -- Icon for the paint bucket (you can change this icon as needed)
+                skin.skin,  -- The name of the skin
+                previewImagePath,  -- Path to the preview image
+                function()
+                    print("Skin selected: " .. skin.skin)  -- Debugging: Print the selected skin name
+                    handleSkinSelection(skin.skin) 
+                end,  -- Function when the skin is selected
+                nil,  -- No additional flags for this entry
+                ui.OnlineExtraFlags.None  -- No additional flags
+            )
+        end
     end
 end
+
+-- Function to handle skin selection
+function handleSkinSelection(skinName)
+    -- Find the selected skin in the list
+    local selectedSkin = nil
+    for _, skin in ipairs(skins) do
+        if skin.skin == skinName then
+            selectedSkin = skin
+            break
+        end
+    end
+    
+    if selectedSkin then
+        -- Check if the skin can be used in the pits or everywhere
+        if selectedSkin.allowInPits then
+            print(skinName .. " can be used in pits.")
+        end
+        
+        if selectedSkin.allowEverywhere then
+            print(skinName .. " can be used everywhere.")
+        end
+    else
+        print("Skin not found!")
+    end
+end
+
+-- Add the option to the UI for changing skins (only displaying preview images)
+ui.registerOnlineExtra(
+    ui.Icons.PaintBucket,  -- Icon for the paint bucket (you can change this icon as needed)
+    "Change Skins for Cars",  -- Text displayed in the UI
+    nil,  -- No additional helper function
+    displaySkinPreviews,  -- Function to display skin previews
+    nil,  -- No function when skin is selected
+    ui.OnlineExtraFlags.None  -- No additional flags
+)
